@@ -1,37 +1,42 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Zenject;
 
 public class GridManager : MonoBehaviour
 {
-    public int score = 0;
-    [SerializeField] private int gridWidth = 10;
-    [SerializeField] private int gridHeight = 10;
+    public Action<int> OnScoreAdd;
+    public Action OnChangeGridSize;
+    
+    [SerializeField] private int grid = 10;
     [SerializeField] private float spacing = 1.1f;
 
     private GridCell[,] _grid;
     private CellFactory _cellFactory;
     private DiContainer _diContainer;
+    private int _score;
 
     [Inject]
-    private void Construct(CellFactory cellFactory,DiContainer diContainer)
+    private void Construct(CellFactory cellFactory, DiContainer diContainer)
     {
         _cellFactory = cellFactory;
         _diContainer = diContainer;
-    
-    } 
+    }
+
     private void Start()
     {
         CreateGrid();
+        OnScoreAdd?.Invoke(_score);
     }
 
     private void CreateGrid()
     {
-        _grid = new GridCell[gridWidth, gridHeight];
+        _grid = new GridCell[grid, grid];
 
-        for (int x = 0; x < gridWidth; x++)
+        for (int x = 0; x < grid; x++)
         {
-            for (var y = 0; y < gridHeight; y++)
+            for (var y = 0; y < grid; y++)
             {
                 var pos = new Vector3(x * spacing, 0, y * spacing);
                 var cell = _cellFactory.CreateCell(pos, transform);
@@ -50,8 +55,8 @@ public class GridManager : MonoBehaviour
         {
             foreach (var cell in group)
                 cell.ResetCell();
-
-            score++;
+            _score++;
+            OnScoreAdd?.Invoke(_score);
         }
     }
 
@@ -93,7 +98,7 @@ public class GridManager : MonoBehaviour
             int nx = cell.GridPosition.x + dir.x;
             int ny = cell.GridPosition.y + dir.y;
 
-            if (nx >= 0 && nx < gridWidth && ny >= 0 && ny < gridHeight)
+            if (nx >= 0 && nx < grid && ny >= 0 && ny < grid)
             {
                 neighbors.Add(_grid[nx, ny]);
             }
@@ -102,7 +107,25 @@ public class GridManager : MonoBehaviour
         return neighbors;
     }
 
-    public int GetGridWidth() => gridWidth;
-    public int GetGridHeight() => gridHeight;
+    public void ResetAllGrid()
+    {
+        foreach (var item in _grid)
+        {
+            Destroy(item.gameObject);
+        }
+        CreateGrid();
+    }
+
+    public int GetGrid() => grid;
     public float GetSpacing() => spacing;
+
+    public int GridSize
+    {
+        get => grid;
+        set
+        {
+            grid = value;
+            OnChangeGridSize?.Invoke();
+        }
+    }
 }
