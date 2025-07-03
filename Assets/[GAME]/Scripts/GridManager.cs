@@ -101,4 +101,8 @@ public class GridManager : MonoBehaviour
 
         return neighbors;
     }
+
+    public int GetGridWidth() => gridWidth;
+    public int GetGridHeight() => gridHeight;
+    public float GetSpacing() => spacing;
 }

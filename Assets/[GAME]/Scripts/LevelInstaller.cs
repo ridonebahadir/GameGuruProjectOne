@@ -10,7 +10,6 @@ public class LevelInstaller : MonoInstaller
     public override void InstallBindings()
     {
         Container.Bind<CellFactory>().AsSingle();
-        //Container.Bind<GridManager>().FromComponentInHierarchy().AsSingle();
         Container.BindInstance(cellPrefab).WhenInjectedInto<CellFactory>();
         Container.Bind<GridManager>().FromInstance(gridManager).AsSingle();
     }
